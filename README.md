@@ -1,0 +1,1 @@
+该skills用于约束AI生产python代码时的规范
