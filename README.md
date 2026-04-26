@@ -1,1 +1,1 @@
-该skills用于约束AI生产python代码时的规范
+该skills用于约束AI生产python代码时的规范，需要是下载python-code-format这个文件夹，然后安装到AI工具即可
