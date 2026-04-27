@@ -74,15 +74,21 @@ import business_model
 
 # ------------ utils/tools ------------
 from utils import text_cleaner
-from utils import DateTimeutils
-from utils import FilePathutils
+from utils import DateTimeUtils
+from utils import FilePathUtils
 from utils import unicode_normalizer
 ```
+
+- 导入区域结束与后续代码之间应有一个空行分隔。
 
 ### 函数文档字符串
 
 - 每个函数必须包含详细的 docstring，说明功能、参数、返回值和示例。
 - 示例部分必须使用 `Example:` 标题，并给出可运行的代码和预期输出。
+- **例外规则**：
+  - `@property` 装饰的方法：跳过 `Args:` 部分（属性不接受参数）
+  - `__init__` 方法：跳过 `Returns:` 部分（构造方法隐式返回 None）
+  - `main()` 入口函数：`Returns:` 和 `Example:` 可选，视复杂度而定
 
 格式为：
 
@@ -119,6 +125,11 @@ class ClassName:
     class_arg_name = ""  # 类变量注释，描述它的作用
 
     def __init__(self):
+        """初始化 ClassName 实例
+
+        Args:
+            arg1 (str): 参数1的描述
+        """
         self.init_class_arg_name = ""  # 初始化变量注释，描述它的作用
 
     def class_func_name(self, arg: str) -> int:
