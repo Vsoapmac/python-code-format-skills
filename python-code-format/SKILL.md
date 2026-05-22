@@ -221,6 +221,30 @@ func_name(arg=3)
   - 英文括号 `( )` 内外侧与文字之间**加空格**（除非内侧紧跟换行或无内容）
   - 示例：`# 处理数据 (支持多种格式) 并返回结果`
 
+### 行内注释格式
+
+- **行内注释必须紧跟在代码之后**，格式为：`代码 + 空格 + # + 空格 + 注释文本`
+- **禁止使用大量空格对齐行内注释**：不要为了让同一区域内的多行注释对齐而插入大量空格。每行的行内注释独立放置，仅保留代码与 `#` 之间一个空格即可。
+
+格式对比：
+
+```python
+# ❌ 错误示例: 使用大量空格对齐行内注释
+file_path = os.path.normpath(file_path)                       # 步骤2: 规范化路径
+rows_data = []                                                # 存储最终结果的列表
+csv_reader = csv.DictReader(f, delimiter=delimiter)           # DictReader直接返回字典形式
+rows_data.append(dict(row))                                   # 转换为普通dict，避免后续引用问题
+
+# ✅ 正确示例: 代码后仅跟一个空格，不额外对齐
+file_path = os.path.normpath(file_path) # 步骤2: 规范化路径
+rows_data = [] # 存储最终结果的列表
+csv_reader = csv.DictReader(f, delimiter=delimiter) # DictReader直接返回字典形式
+rows_data.append(dict(row)) # 转换为普通dict，避免后续引用问题
+```
+
+- 正确格式规则：`代码 # 注释文本`（代码与 `#` 之间一个空格，`#` 与注释文本之间一个空格）
+- 不再使用的代码**不应**以行内注释形式注释掉，应直接删除。
+
 ## 执行要求
 
 - 生成任何代码时，必须**完整应用**上述格式。
@@ -281,20 +305,20 @@ def read_csv(file_path: str, delimiter: str = ",") -> List[Dict[str, str]]:
     # 步骤3: 检查文件是否存在
     if not file_path:
         raise ValueError("文件路径不能为空")
-    file_path = os.path.normpath(file_path)                       # 步骤2: 规范化路径
+    file_path = os.path.normpath(file_path) # 步骤2: 规范化路径
     # 步骤3: 校验文件是否真实存在
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"找不到指定的CSV文件: {file_path}")
     # endregion ---------------------------- 1. 参数校验与路径处理 ----------------------------
 
     # region ---------------------------- 2. 打开文件并读取内容 ----------------------------
-    rows_data = []                                                # 存储最终结果的列表
+    rows_data = [] # 存储最终结果的列表
     try:
         # 使用with语句自动管理文件资源，指定编码为utf-8-sig以处理BOM头
         with open(file_path, mode="r", encoding="utf-8-sig") as f:
-            csv_reader = csv.DictReader(f, delimiter=delimiter)   # DictReader直接返回字典形式
+            csv_reader = csv.DictReader(f, delimiter=delimiter) # DictReader直接返回字典形式
             for row in csv_reader:
-                rows_data.append(dict(row))                       # 转换为普通dict，避免后续引用问题
+                rows_data.append(dict(row)) # 转换为普通dict，避免后续引用问题
     except csv.Error as e:
         raise RuntimeError(f"CSV解析失败: {e}") from e
     except PermissionError as e:
