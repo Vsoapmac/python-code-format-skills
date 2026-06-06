@@ -8,6 +8,8 @@ description: 严格遵循指定格式生成 Python 代码，包含文件头、�
 ## 目标
 在生成任何 Python 代码时，必须严格遵守以下格式要求，以确保代码可读性、可维护性和一致性。
 
+核心原则：**任何人看到这行代码时，不需要经过思考就能立刻明白它在干什么**。注释的本质是替读者省去"推理代码意图"的时间，而不是复述语法。
+
 ## 核心规则
 
 ### 模块文件头部格式
@@ -213,13 +215,13 @@ func_name(arg=3)
 
 ```python
 # ❌ 错误示例: 使用大量空格对齐行内注释
-file_path = os.path.normpath(file_path)                       # 步骤2: 规范化路径
+file_path = os.path.normpath(file_path)                       # 规范化路径
 rows_data = []                                                # 存储最终结果的列表
 csv_reader = csv.DictReader(f, delimiter=delimiter)           # DictReader直接返回字典形式
 rows_data.append(dict(row))                                   # 转换为普通dict，避免后续引用问题
 
 # ✅ 正确示例: 代码后仅跟一个空格，不额外对齐
-file_path = os.path.normpath(file_path) # 步骤2: 规范化路径
+file_path = os.path.normpath(file_path) # 规范化路径
 rows_data = [] # 存储最终结果的列表
 csv_reader = csv.DictReader(f, delimiter=delimiter) # DictReader直接返回字典形式
 rows_data.append(dict(row)) # 转换为普通dict，避免后续引用问题
@@ -227,6 +229,65 @@ rows_data.append(dict(row)) # 转换为普通dict，避免后续引用问题
 
 - 正确格式规则：`代码 # 注释文本`（代码与 `#` 之间一个空格，`#` 与注释文本之间一个空格）
 - 不再使用的代码**不应**以行内注释形式注释掉，应直接删除。
+
+#### 必须添加行内注释的场景
+
+以下四类代码**必须**有行内注释，缺少注释会显著增加理解成本：
+
+- **非显而易见的字面量**：魔法数字、硬编码常量、特殊格式字符串、正则表达式等，注释应说明"为什么是这个值"而非"这个值是什么"。
+  - ✅ `timeout = 30  # 第三方API文档建议超时不超过30秒`
+  - ❌ `timeout = 30  # 设置超时为30秒`
+- **有副作用或依赖外部状态的操作**：文件 I/O、网络请求、数据库操作、全局变量修改等。
+  - ✅ `os.makedirs(output_dir, exist_ok=True)  # 递归创建目录，已存在也不报错`
+- **算法核心步骤 / 非直觉写法**：循环中的关键分支、递归终止条件、性能优化技巧、反直觉的实现方式。
+  - ✅ `idx = max(0, min(idx, len(arr) - 1))  # 将索引钳制在合法范围内，防止越界`
+- **容易产生歧义的类型转换或运算**：隐式类型转换、位运算、精度敏感的浮点计算等。
+  - ✅ `timestamp_ms = int(t.timestamp() * 1000)  # datetime转毫秒时间戳，API要求整数`
+
+#### 不应添加行内注释的场景
+
+以下情况添加行内注释反而干扰阅读，应该省略：
+
+- **自解释的命名**：变量/函数名已经清晰表达了含义。
+  - ❌ `user_name = "Alice"  # 设置用户名为Alice`（完全多余）
+- **纯组装/透传逻辑**：仅调用命名良好的函数，无额外处理。
+  - ❌ `result = calculate_average(data)  # 计算平均值`（函数名已说明一切）
+- **标准的 getter/setter / property**：无额外业务逻辑。
+  - ❌ `return self._value  # 返回私有属性的值`（多余）
+
+#### 密度控制
+
+- **理想密度**：每 3～8 行代码至少有一条行内注释，但不宜每行都加。
+- **判断标准**：一个不熟悉该模块的人，扫描代码时能否在 3 秒内把握每一块的意图。如果能，密度合适；如果某段代码需要停下来推演才能理解，说明注释不够或位置不对。
+- **均匀分布**：注释应分散在关键节点上，而不是集中堆在某一个区域。
+
+#### 对比示例
+
+```python
+# ✅ 合理密度——关键步骤有注释，自解释代码略过
+total = 0
+for item in items:
+    if item.status != Status.ACTIVE:  # 跳过非活跃状态的项
+        continue
+    total += item.price * 1.13  # 含13%消费税
+return round(total, 2)  # 保留两位小数，避免浮点误差
+
+# ❌ 注释过多——每行都注释，干扰阅读
+total = 0  # 初始化总和为0
+for item in items:  # 遍历items列表
+    if item.status != Status.ACTIVE:  # 如果项的状态不是活跃
+        continue  # 跳过本次循环
+    total += item.price * 1.13  # 总数加上价格乘1.13
+return round(total, 2)  # 返回保留两位小数的结果
+
+# ❌ 注释过少——关键逻辑缺乏解释，需推演才能理解
+total = 0
+for item in items:
+    if item.status != Status.ACTIVE:
+        continue
+    total += item.price * 1.13
+return round(total, 2)
+```
 
 ## 执行要求
 
