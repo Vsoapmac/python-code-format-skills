@@ -24,12 +24,20 @@ description: 严格遵循指定格式生成 Python 代码，包含文件头、�
 # @File    : {文件名(包含后缀)}
 # @Software: {IDE 名称，如 VSCode, PyCharm}
 # @Description: {该代码的作用是什么}
-# 这里是 import 区域
+
+# （此处接导入语句，参考下方"第三方库导入"规则）
 ```
 
 所有用 `{}` 包裹的占位符，必须根据上下文替换成合适的内容。
 
 例子：`{姓名}` 替换成 `john`，`{日期}` 替换为当前日期。
+
+### 空行规则
+
+- **顶级函数/类之间**：两个空行（遵循 PEP 8）。
+- **类内部方法之间**：一个空行（遵循 PEP 8）。
+- **导入区域结束与后续代码之间**：一个空行。
+- **函数内部逻辑块之间**：可用一个空行分隔不同逻辑段落，但不宜滥用。
 
 ### 模块命名规则
 
@@ -38,13 +46,70 @@ description: 严格遵循指定格式生成 Python 代码，包含文件头、�
 
 这一规则同时适用于模块文件名和导入时的别名（如有必要），保持项目内命名风格一致。
 
+### 变量命名补充规则
+
+- **布尔变量**：使用 `is_`、`has_`、`can_`、`should_` 等前缀，使意图一目了然。
+  - ✅ `is_active`、`has_permission`、`can_execute`
+  - ❌ `active`、`permission`、`executable`
+- **私有变量/方法**：单下划线 `_name` 表示模块/类内部使用（protected），双下划线 `__name` 触发名称改写（name mangling），仅在需要避免子类属性冲突时使用双下划线。
+- **集合变量**：使用复数形式命名列表/字典/集合。
+  - ✅ `users`、`error_messages`、`config_map`
+  - ❌ `user_list`、`error_dict`（类型后缀冗余，除非同一作用域有多种集合类型需要区分）
+
+### 常量定义规范
+
+- 常量使用**全大写蛇形命名法（UPPER_SNAKE_CASE）**。
+- 所有常量集中定义在模块顶部（位于导入语句之后，函数/类定义之前）。
+- 禁止在函数体内部散布魔法数字；超过一次使用的字面量必须提取为常量。
+- 模块级常量较多时（超过 10 个），考虑抽取到独立的 `constants.py` 或 `config.py` 中。
+
+示例：
+
+```python
+# ------------ 常量定义 ------------
+DEFAULT_TIMEOUT_SECONDS = 30  # 第三方 API 文档建议超时不超过 30 秒
+MAX_RETRY_COUNT = 3  # 失败重试上限，超过此值视为不可恢复错误
+CSV_EXPORT_ENCODING = "utf-8-sig"  # 带 BOM 的 UTF-8，确保 Excel 正确识别中文
+DB_CONNECTION_POOL_SIZE = 10  # 连接池大小，根据服务器 4 核 CPU 设定
+```
+
+### 枚举（Enum）使用规范
+
+- 当一组固定值在代码中反复出现时，必须使用 `enum.Enum` 替代字符串常量或整数常量。
+- 枚举类名使用 PascalCase，成员名使用 UPPER_SNAKE_CASE。
+- 如枚举值不需要关心具体数值，使用 `auto()` 自动分配。
+- 枚举成员需添加行内注释说明含义。
+
+示例：
+
+```python
+from enum import Enum, auto
+
+
+class TaskStatus(Enum):
+    """任务状态枚举"""
+    PENDING = auto()  # 等待执行
+    RUNNING = auto()  # 正在执行
+    SUCCESS = auto()  # 执行成功
+    FAILED = auto()  # 执行失败
+    CANCELLED = auto()  # 已取消
+
+
+class HttpMethod(Enum):
+    """HTTP 请求方法枚举"""
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    DELETE = "DELETE"
+```
+
 ### 第三方库导入
 
 - **所有导入语句按项目功能模块分组**，组名根据模块的实际功能自定义，例如 `common`、`database`、`string-formatter`、`api-connector`、`business`、`tools` 等。
 - 组间用注释空行分隔。每组之间间隔一行
 - 分组名称和数量完全取决于当前项目的模块划分，不应机械套用固定名称
 
-- 每组内的导入按长度排序（或字母序），尽可能使用 `from ... import` ，并且在有多个`from ... import`对象时换行并对齐
+- 每组内的导入按**字母序**排列（标准库、第三方库、项目内模块依次），尽可能使用 `from ... import` ，并且在有多个`from ... import`对象时换行并对齐
 - 组注释格式：`# ------------ 组名 ------------`
 
 示例（展示不同项目可能的分组）：
@@ -83,14 +148,49 @@ from utils import unicode_normalizer
 
 - 导入区域结束与后续代码之间应有一个空行分隔。
 
+### 类型注解规范
+
+- 所有公共函数/方法的**参数和返回值**必须添加类型注解。
+- 私有函数/方法的类型注解建议添加，但非强制。
+- 类属性和实例属性建议使用注解语法声明类型（而非仅在 docstring 中描述）。
+- 复杂的联合类型、可选类型使用 `typing` 模块提供的 `Optional`、`Union`、`Any` 等。
+- 循环引用类型可使用 `from __future__ import annotations` 或字符串形式的前向引用。
+
+示例：
+
+```python
+from __future__ import annotations
+
+from typing import Optional, Union
+
+class ExampleClass:
+    """类型注解示例类"""
+
+    def process(self, data: list[str], count: int = 0) -> Optional[str]:
+        """处理数据并返回结果
+
+        Args:
+            data (list[str]): 待处理的字符串列表
+            count (int): 处理次数上限，默认为 0 表示不限制
+
+        Returns:
+            Optional[str]: 处理结果，无数据时返回 None
+        """
+        if not data:
+            return None
+        return ", ".join(data[:count] if count > 0 else data)
+```
+
 ### 函数文档字符串
 
-- 每个函数必须包含详细的 docstring，说明功能、参数、返回值和示例。
+- 每个函数必须包含详细的 docstring，说明功能、参数、返回值、可能抛出的异常和示例。
+- docstring 按以下顺序组织：一行摘要 → 详细描述（可选） → `Args:` → `Returns:` → `Raises:` → `Example:`
+- `Raises:` 部分列出该函数可能抛出的异常及触发条件，**当函数内部显式 `raise` 了异常时必须书写**，仅使用内置函数/库默认抛出的异常可省略。
 - 示例部分必须使用 `Example:` 标题，并给出可运行的代码和预期输出。
 - **例外规则**：
-  - `@property` 装饰的方法：跳过 `Args:` 部分（属性不接受参数）
+  - `@property` 装饰的方法：跳过 `Args:` 和 `Raises:` 部分
   - `__init__` 方法：跳过 `Returns:` 部分（构造方法隐式返回 None）
-  - `main()` 入口函数：`Returns:` 和 `Example:` 可选，视复杂度而定
+  - `main()` 入口函数：`Returns:`、`Raises:` 和 `Example:` 可选，视复杂度而定
 
 格式为：
 
@@ -103,6 +203,9 @@ def func_name(arg: str) -> int:
 
     Returns:
         int: 返回什么
+
+    Raises:
+        ValueError: 当 arg 为空字符串时抛出
 
     Example:
         >>> results = func_name("test")
@@ -126,13 +229,15 @@ class ClassName:
     """这个类的作用"""
     class_arg_name = ""  # 类变量注释，描述它的作用
 
-    def __init__(self):
+    def __init__(self, arg1: str):
         """初始化 ClassName 实例
 
         Args:
             arg1 (str): 参数1的描述
+
+        Raises:
+            ValueError: 当 arg1 为空字符串时抛出
         """
-        self.init_class_arg_name = ""  # 初始化变量注释，描述它的作用
 
     def class_func_name(self, arg: str) -> int:
         """这个函数的作用是什么
@@ -151,10 +256,100 @@ class ClassName:
         return 1
 ```
 
+### 错误处理规范
+
+- **优先使用内置异常**：`ValueError`、`TypeError`、`FileNotFoundError` 等。仅在需要按异常类型分流业务逻辑时，才定义自定义异常类。
+- **异常链**：捕获异常后重新抛出时，必须使用 `raise ... from e` 保留原始堆栈信息，而非丢失因果链。
+- **精确捕获**：仅捕获预期的具体异常类型，**禁止**使用裸露的 `except:` 或宽泛的 `except Exception:`，除非在最外层入口做兜底记录。
+- **清理资源**：涉及文件、网络、数据库连接的资源管理，优先使用 `with` 语句（上下文管理器），而非 `try/finally` 手动关闭。
+
+示例：
+
+```python
+import json
+from pathlib import Path
+
+
+class ConfigParseError(Exception):
+    """配置文件解析异常，业务层可根据此类型进行降级处理"""
+
+
+def load_config(file_path: str) -> dict:
+    """加载并解析 JSON 配置文件
+
+    Args:
+        file_path (str): 配置文件路径
+
+    Returns:
+        dict: 解析后的配置字典
+
+    Raises:
+        FileNotFoundError: 配置文件不存在
+        ConfigParseError: JSON 解析失败
+    """
+    config_path = Path(file_path)
+    if not config_path.is_file():
+        raise FileNotFoundError(f"配置文件不存在: {file_path}")
+
+    try:
+        with open(config_path, encoding="utf-8") as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        raise ConfigParseError(f"JSON 格式错误: {e}") from e
+```
+
+### 字符串格式化规范
+
+- **优先使用 f-string**（Python 3.6+）：可读性最高，性能最好。
+- 需要在多处复用同一模板时，使用 `str.format()`。
+- **禁止使用 `%` 格式化**（`"%s" % value`），该方式已过时且容易出错。
+- f-string 中不要写入复杂表达式；如需计算，先赋值给变量再引用。
+
+示例：
+
+```python
+# ✅ f-string——简洁直观
+name = "Alice"
+count = 5
+message = f"用户 {name} 有 {count} 条未读消息"
+
+# ✅ str.format——模板复用场景
+TEMPLATE = "文件 {filename} 第 {line} 行: {error}"
+error_msg = TEMPLATE.format(filename="data.csv", line=42, error="字段缺失")
+
+# ❌ 禁止
+message = "用户 %s 有 %d 条未读消息" % (name, count)
+```
+
+### 上下文管理器使用规范
+
+- 所有需要显式释放的资源（文件、网络连接、数据库游标、锁等）**必须**使用 `with` 语句管理。
+- 自定义需要资源管理的类时，实现 `__enter__` 和 `__exit__` 方法使其成为上下文管理器。
+- 简单场景也可用 `contextlib.contextmanager` 装饰器快速创建。
+
+示例：
+
+```python
+from pathlib import Path
+
+# ✅ 文件操作使用 with
+with open("data.csv", encoding="utf-8") as f:
+    content = f.read()
+
+# ✅ 使用 pathlib 的写入方法（自动管理资源）
+Path("output.txt").write_text("hello", encoding="utf-8")
+
+# ❌ 手动管理——容易遗漏关闭
+f = open("data.csv", encoding="utf-8")
+content = f.read()
+f.close()
+```
+
 ### 区块注释
 
 - 当代码超过 8-10 行时，使用 `region` 风格的区块注释，标明代码作用。
-- 注释必须成对出现：`# region ----- 描述 -----` 和 `# endregion ----- 描述 -----`
+- 注释必须成对出现：`# region ---------------------------- 描述 ----------------------------` 和 `# endregion ---------------------------- 描述 ----------------------------`
+- 横线数量统一为 28 个 `-`，以保证视觉对齐
 
 实例：
 
@@ -170,6 +365,7 @@ func_name(arg=3)
 
 - 对需要谨慎修改、可能产生重大影响、或不得已而为之的代码，使用醒目的多行注释。
 - 每行文本不宜过长，可适当换行。
+- 警示注释采用成对标记，首尾各一行 `===` 分隔线，保证视觉上清晰闭合。
 
 格式：
 
@@ -289,6 +485,101 @@ for item in items:
 return round(total, 2)
 ```
 
+### `__all__` 导出规范
+
+- 被其他模块 `import *` 使用的模块，必须定义 `__all__` 列表明确公开 API。
+- `__all__` 中字符串按字母序排列。
+- 仅放入确实需要被外部使用的公共符号，内部辅助函数/类不应列入。
+- 没有 `from xxx import *` 使用场景的脚本/内部模块可省略 `__all__`。
+
+示例：
+
+```python
+__all__ = [
+    "ConfigParseError",
+    "load_config",
+    "save_config",
+]
+```
+
+### `if __name__ == "__main__"` 入口规范
+
+- 可直接执行的 Python 文件必须在末尾包含 `if __name__ == "__main__":` 保护块。
+- 入口逻辑封装在一个 `main()` 函数中，`if __name__` 块内只调用 `main()`。
+- `main()` 函数的 docstring 中 `Returns:`、`Raises:`、`Example:` 可选。
+- 如需命令行参数，使用 `argparse` 在 `main()` 内部解析，不暴露裸 `sys.argv`。
+
+示例：
+
+```python
+import argparse
+
+
+def main() -> None:
+    """入口函数：解析命令行参数并执行主逻辑"""
+    parser = argparse.ArgumentParser(description="CSV 文件处理工具")
+    parser.add_argument("file_path", help="CSV 文件路径")
+    parser.add_argument("--delimiter", default=",", help="分隔符，默认逗号")
+    args = parser.parse_args()
+
+    data = read_csv(args.file_path, delimiter=args.delimiter)
+    print(f"读取到 {len(data)} 行数据")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### 文件编码规范补充
+
+- Python 3 默认使用 UTF-8 编码，`# -*- coding: utf-8 -*-` 声明主要用于向后兼容和编辑器识别，建议保留。
+- 读写外部文件时，**显式指定 `encoding="utf-8"`**，不要依赖系统默认编码。
+- 处理 Excel 导出的 CSV 时，优先使用 `encoding="utf-8-sig"` 以去除 BOM 头。
+- 需要兼容 GBK/GB2312 等非 UTF-8 编码的遗留系统时，在 `open()` 中显式声明编码并添加注释说明原因。
+
+示例：
+
+```python
+# ✅ 显式指定编码
+with open("report.csv", encoding="utf-8-sig") as f:  # utf-8-sig 去除 BOM，兼容 Excel 导出
+    data = f.read()
+
+# ✅ 兼容遗留系统——注释说明原因
+with open("legacy_data.csv", encoding="gbk") as f:  # 上游系统使用 GBK 编码，无法修改
+    data = f.read()
+```
+
+### 函数长度与复杂度参考
+
+- 单个函数建议不超过 50 行（不含 docstring 和空行）。
+- 如果函数超过此阈值，考虑拆分为多个职责单一的子函数。
+- 圈复杂度（cyclomatic complexity）建议控制在 10 以内；如果 `if/for/while` 嵌套超过 3 层，应重构。
+- 这并非硬性规则，当拆分会破坏逻辑内聚性时允许适当超出，但需要添加充分的区域注释解释原因。
+
+### 代码质量检查规则
+
+- 项目推荐使用以下工具组合保证代码质量（按推荐优先级排列）：
+  - **Ruff**：统一的 linter + formatter，替代 flake8/isort/black，速度快
+  - **Mypy** 或 **Pyright**：静态类型检查
+- 提交代码前必须确保 linter 和类型检查无新增错误。
+- 推荐在项目根目录配置 `pyproject.toml` 统一规则：
+
+```toml
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+```
+
 ## 执行要求
 
 - 生成任何代码时，必须**完整应用**上述格式。
@@ -309,6 +600,7 @@ return round(total, 2)
 # @File    : CSVUtils.py
 # @Software: VSCode
 # @Description: 提供CSV文件读取功能的工具模块，支持自定义分隔符，返回字典列表
+
 # ------------ common ------------
 import csv
 import os
@@ -334,7 +626,13 @@ def read_csv(file_path: str, delimiter: str = ",") -> List[Dict[str, str]]:
 
     Returns:
         List[Dict[str, str]]: 由每行数据组成的字典列表，键为列名，值为对应字段内容
-    
+
+    Raises:
+        ValueError: 当 file_path 为空时抛出
+        FileNotFoundError: 当指定路径的文件不存在时抛出
+        RuntimeError: 当 CSV 解析失败时抛出
+        PermissionError: 当没有文件读取权限时抛出
+
     Example:
         >>> data = read_csv("example.csv")
         >>> print(data)
@@ -344,11 +642,11 @@ def read_csv(file_path: str, delimiter: str = ",") -> List[Dict[str, str]]:
         ]
     """
     # region ---------------------------- 参数校验与路径处理 ----------------------------
-    # 检查文件路径是否为空或非法
+    # 后续 os.path.isfile 对空字符串在部分平台上会异常返回，提前拦截
     if not file_path:
         raise ValueError("文件路径不能为空")
-    file_path = os.path.normpath(file_path) # 规范化路径
-    # 校验文件是否真实存在
+    file_path = os.path.normpath(file_path) # 消除路径中的 '.' 和 '..'，避免 isfile 误判
+    # 使用 isfile 而非 exists，排除目录路径被误传入的情况
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"找不到指定的CSV文件: {file_path}")
     # endregion ---------------------------- 参数校验与路径处理 ----------------------------
@@ -356,11 +654,11 @@ def read_csv(file_path: str, delimiter: str = ",") -> List[Dict[str, str]]:
     # region ---------------------------- 打开文件并读取内容 ----------------------------
     rows_data = [] # 存储最终结果的列表
     try:
-        # 使用with语句自动管理文件资源，指定编码为utf-8-sig以处理BOM头
+        # utf-8-sig 自动跳过 BOM 头，避免 CSV 列名出现 \ufeff 前缀
         with open(file_path, mode="r", encoding="utf-8-sig") as f:
-            csv_reader = csv.DictReader(f, delimiter=delimiter) # DictReader直接返回字典形式
+            csv_reader = csv.DictReader(f, delimiter=delimiter) # DictReader 用第一行作为字段名，自动解析为字典
             for row in csv_reader:
-                rows_data.append(dict(row)) # 转换为普通dict，避免后续引用问题
+                rows_data.append(dict(row)) # 转为普通 dict 拷贝，避免外部修改 reader 内部缓存
     except csv.Error as e:
         raise RuntimeError(f"CSV解析失败: {e}") from e
     except PermissionError as e:
