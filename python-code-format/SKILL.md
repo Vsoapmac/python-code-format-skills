@@ -1,6 +1,6 @@
 ---
 name: python-code-format
-description: 当用户请求编写或在某项任务中需要生成 Python 代码时使用，确保代码符合格式规范、易于维护，并遵循奥卡姆剃刀原则。
+description: 任何需要编写或生成 Python 代码的场景都必须使用此技能，确保代码符合格式规范、易于维护，并遵循奥卡姆剃刀原则。
 ---
 
 # Python 代码格式规范技能
@@ -297,6 +297,27 @@ def load_config(file_path: str) -> dict:
             return json.load(f)
     except json.JSONDecodeError as e:
         raise ConfigParseError(f"JSON 格式错误: {e}") from e
+```
+
+### 引号使用规范
+
+- **代码中统一使用双引号** `"` 而非单引号 `'`，包括字符串字面量、字典键、f-string 等所有场景。
+- 只有一种例外：字符串内容本身包含双引号时，可用单引号包裹以避免转义。
+
+示例：
+
+```python
+# ✅ 统一双引号
+name = "Alice"
+greeting = f"Hello, {name}"
+config = {"host": "localhost", "port": 8080}
+
+# ✅ 内容含双引号时可用单引号
+html = '<div class="container">'
+
+# ❌ 禁止使用单引号（除非内容含双引号）
+name = 'Alice'
+greeting = f'Hello, {name}'
 ```
 
 ### 字符串格式化规范
