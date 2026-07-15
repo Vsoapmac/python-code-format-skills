@@ -1,6 +1,6 @@
 ---
 name: python-code-format
-description: 当你在生成超过15行代码、编写python函数/类/模块、导入模块、生成.py文件或生产任意python代码前触发此技能。确保代码符合格式规范、易于维护，并遵循奥卡姆剃刀原则。
+description: 当你在生成超过15行代码、编写python函数/类/模块、导入模块、生成.py文件或生产任意python代码，或用户说"注释"/"规范"而编辑的代码为python代码时使用
 ---
 
 # Python 代码格式规范技能
