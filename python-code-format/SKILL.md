@@ -1,73 +1,73 @@
 ---
 name: python-code-format
-description: 当你在生成超过15行代码、编写python函数/类/模块、导入模块、生成.py文件或生产任意python代码，或用户说"注释"/"规范"而编辑的代码为python代码时使用
+description: Use when you are generating more than 15 lines of code, writing Python functions/classes/modules, importing modules, generating .py files or producing any Python code, or when the user says "注释" (comments) / "规范" (conventions) and the code being edited is Python code
 ---
 
-# Python 代码格式规范技能
+# Python Code Format Convention Skill
 
-生成任何 Python 代码时必须严格遵守以下格式。核心原则：**任何人看到时不需要经过思考就能立刻明白它在干什么**。代码的最大成本不是写出来，而是后续反复阅读、理解和修改；注释的本质是替读者省去"推理代码意图"的时间，而非复述语法。能用朴素方案解决的，不要引入不必要的复杂度。
+When generating any Python code, the following format must be strictly followed. Core principle: **anyone who sees the code should immediately understand what it does without having to think**. The biggest cost of code is not writing it, but reading, understanding, and modifying it repeatedly afterwards; the essence of a comment is to save the reader the time of "inferring the code's intent", not to restate the syntax. If a plain solution works, do not introduce unnecessary complexity.
 
-## 模块文件头部
+## Module File Header
 
-文件开头必须有如下头部，`{}` 占位符根据上下文替换（如 `{日期}` → 当前日期）：
+The beginning of the file must have the following header. Replace the `{}` placeholders according to context (e.g., `{date}` → current date):
 
 ```python
 # -*- coding: utf-8 -*-
-# @Time    : {日期，格式YYYY-mm-DD}
-# @Author  : {作者名称}
-# @File    : {文件名(包含后缀)}
-# @Software: {IDE 名称，如 VSCode, PyCharm}
-# @Description: {该代码的作用是什么}
+# @Time    : {date, format YYYY-mm-DD}
+# @Author  : {author name}
+# @File    : {file name (with extension)}
+# @Software: {IDE name, e.g., VSCode, PyCharm}
+# @Description: {what this code does}
 ```
 
-在编写作者名称时, 询问用户作者名称是什么, 并给出选择:
+When filling in the author name, ask the user what the author name should be, offering these choices:
 
-- AI 大模型名称
-- 用户自定义名称
+- The AI model's name
+- A custom name provided by the user
 
-然后根据用户选择的名称, 替换 `{作者名称}` 占位符。
+Then replace the `{author name}` placeholder according to the user's choice.
 
-## 空行规则
+## Blank Line Rules
 
-- 文件头部与后续代码之间：1 行；导入区域结束与后续代码之间：2 行
-- 顶级函数/类之间：2 行；类内方法之间：1 行（PEP 8）
-- 函数内部逻辑块之间可用 1 个空行分隔，不宜滥用
+- Between the file header and subsequent code: 1 line; between the end of the import section and subsequent code: 2 lines
+- Between top-level functions/classes: 2 lines; between methods inside a class: 1 line (PEP 8)
+- Logical blocks inside a function may be separated by 1 blank line; do not overuse
 
-## 命名规则
+## Naming Rules
 
-- **utils 工具类模块**：大驼峰，如 `DateTimeUtils.py`；**其他功能模块**：蛇形，如 `business_model.py`
-- **类名** PascalCase；**函数/方法/变量** snake_case
-- **布尔变量**：`is_`/`has_`/`can_`/`should_` 前缀（✅ `is_active` ❌ `active`）
-- **私有成员**：单下划线 `_name`；双下划线仅在需要避免子类属性冲突时使用
-- **集合变量**：使用复数（✅ `users` ❌ `user_list`，类型后缀冗余，除非同一作用域需区分多种集合）
-- **常量**：UPPER_SNAKE_CASE，集中定义在导入之后、函数/类之前；禁止函数内散布魔法数字，超过一次使用的字面量必须提取为常量；常量超过 10 个时抽取到独立的 `constants.py`/`config.py`
+- **Utils utility modules**: PascalCase, e.g., `DateTimeUtils.py`; **other functional modules**: snake_case, e.g., `business_model.py`
+- **Class names** PascalCase; **functions/methods/variables** snake_case
+- **Boolean variables**: `is_`/`has_`/`can_`/`should_` prefixes (✅ `is_active` ❌ `active`)
+- **Private members**: single underscore `_name`; double underscore only when needed to avoid attribute conflicts with subclasses
+- **Collection variables**: use plurals (✅ `users` ❌ `user_list`; a type suffix is redundant, unless multiple collection types must be distinguished in the same scope)
+- **Constants**: UPPER_SNAKE_CASE, defined together after imports and before functions/classes; never scatter magic numbers inside functions—any literal used more than once must be extracted into a constant; when there are more than 10 constants, extract them into a standalone `constants.py`/`config.py`
 
 ```python
-# ------------ 常量定义 ------------
-DEFAULT_TIMEOUT_SECONDS = 30 # 第三方 API 文档建议超时不超过 30 秒
+# ------------ Constants ------------
+DEFAULT_TIMEOUT_SECONDS = 30 # Third-party API docs recommend a timeout of no more than 30 seconds
 ```
 
-## 枚举
+## Enums
 
-一组固定值反复出现时，必须用 `enum.Enum` 替代字符串/整数常量。类名 PascalCase、成员 UPPER_SNAKE_CASE，不关心具体数值时用 `auto()`，成员需行内注释：
+When a fixed set of values appears repeatedly, `enum.Enum` must be used instead of string/integer constants. Class name PascalCase, members UPPER_SNAKE_CASE; use `auto()` when the concrete value doesn't matter; members need inline comments:
 
 ```python
 class TaskStatus(Enum):
-    """任务状态枚举"""
-    PENDING = auto() # 等待执行
-    RUNNING = auto() # 正在执行
+    """Task status enum"""
+    PENDING = auto() # Waiting to run
+    RUNNING = auto() # Currently running
 ```
 
-## 导入规则
+## Import Rules
 
-- **所有导入按项目功能模块分组**，组名依项目实际功能自定义（如 `common`、`database`、`api-connector`、`business`、`tools`），不机械套用固定名称
-- 组注释格式：`# ------------ 组名 ------------`，组间间隔一行
-- **组内按视觉长度排列**：整行字符数越短越靠上（因此 `import xxx` 通常在 `from ... import xxx` 之前）；长度相同时按字母序；换行的多行导入块视为最长，放组内最后
-- **该排序仅在组内生效**：不同分组之间互不比较、互不影响
-- 尽可能使用 `from ... import`；导入对象多时换行并对齐
-- 导入区域结束与后续代码之间空一行
+- **All imports are grouped by project functional module**; group names are customized per the project's actual features (e.g., `common`, `database`, `api-connector`, `business`, `tools`)—do not mechanically apply fixed names
+- Group comment format: `# ------------ group name ------------`, with one blank line between groups
+- **Within a group, order by visual length**: shorter total line length goes higher (so `import xxx` usually comes before `from ... import xxx`); wrapped multi-line import blocks count as the longest and go last within the group
+- **This ordering only applies within a group**: different groups are not compared against or affected by each other
+- Prefer `from ... import` whenever possible; when importing many objects, wrap lines and align
+- One blank line between the end of the import section and subsequent code
 
-导入实例: 
+Import example:
 
 ```python
 # ------------ common ------------
@@ -85,28 +85,28 @@ from utils import DateTimeUtils
 from utils import unicode_normalizer
 ```
 
-## 类型注解
+## Type Annotations
 
-- 公共函数/方法的参数和返回值**必须**注解；私有函数建议注解
-- 类属性/实例属性建议用注解语法声明类型（而非仅在 docstring 中描述）
-- 复杂类型用 `typing` 的 `Optional`/`Union`/`Any`；循环引用用 `from __future__ import annotations` 或字符串前向引用
+- Parameters and return values of public functions/methods **must** be annotated; private functions are recommended to be annotated
+- Class attributes/instance attributes should preferably declare their types using annotation syntax (rather than only describing them in the docstring)
+- Use `typing`'s `Optional`/`Union`/`Any` for complex types; for circular references use `from __future__ import annotations` or string forward references
 
-## 函数 docstring
+## Function Docstrings
 
-每个函数必须有 docstring，按顺序：一行摘要 → 详细描述(可选) → `Args:` → `Returns:` → `Raises:` → `Example:`
+Every function must have a docstring, in this order: one-line summary → detailed description (optional) → `Args:` → `Returns:` → `Raises:` → `Example:`
 
 ```python
 def func_name(arg: str) -> int:
-    """这个函数的作用是什么
+    """What this function does
 
     Args:
-        arg (str): 这个参数的作用是什么
+        arg (str): What this parameter does
 
     Returns:
-        int: 返回什么
+        int: What is returned
 
     Raises:
-        ValueError: 当 arg 为空字符串时抛出
+        ValueError: Raised when arg is an empty string
 
     Example:
         >>> func_name("test")
@@ -114,108 +114,108 @@ def func_name(arg: str) -> int:
     """
 ```
 
-- `Raises:` 在函数内显式 `raise` 时必须写；仅内置函数/库默认抛出的异常可省略
-- `Example:` 必须给出可运行代码和预期输出
-- 例外：`@property` 跳过 `Args:`/`Raises:`；`__init__` 跳过 `Returns:`；`main()` 的 `Returns:`/`Raises:`/`Example:` 可选
+- `Raises:` is mandatory when the function explicitly `raise`s; exceptions thrown only by built-in functions/libraries by default may be omitted
+- `Example:` must provide runnable code and its expected output
+- Exceptions: `@property` skips `Args:`/`Raises:`; `__init__` skips `Returns:`; for `main()`, `Returns:`/`Raises:`/`Example:` are optional
 
-## 类定义
+## Class Definitions
 
-- 类变量和实例变量需注释说明作用
-- 类方法和普通函数一样需要完整 docstring
+- Class variables and instance variables need comments explaining their purpose
+- Class methods need complete docstrings just like regular functions
 
-## 错误处理
+## Error Handling
 
-- 优先使用内置异常（`ValueError`、`TypeError` 等）；仅在需按异常类型分流业务逻辑时才自定义异常类
-- 捕获后重新抛出必须 `raise ... from e` 保留异常链
-- 仅捕获预期的具体异常类型，**禁止**裸 `except:` 或宽泛 `except Exception:`（最外层入口兜底除外）
-- 文件/网络/数据库等资源**必须**用 `with` 管理，不用 try/finally 手动关闭；自定义资源类实现 `__enter__`/`__exit__`，简单场景可用 `contextlib.contextmanager`
+- Prefer built-in exceptions (`ValueError`, `TypeError`, etc.); define custom exception classes only when business logic must branch by exception type
+- When re-raising after catching, you must use `raise ... from e` to preserve the exception chain
+- Only catch the specific exception types you expect; bare `except:` or broad `except Exception:` is **forbidden** (except as a last-resort catch-all at the outermost entry point)
+- Resources such as files/network/database **must** be managed with `with`, not manually closed with try/finally; custom resource classes implement `__enter__`/`__exit__`; simple cases may use `contextlib.contextmanager`
 
-## 字符串规范
+## String Conventions
 
-- **统一双引号**（含字典键、f-string）；仅内容本身含双引号时可用单引号包裹
-- **优先 f-string**；同一模板多处复用时用 `str.format()`；**禁止 `%` 格式化**
-- f-string 内不写复杂表达式，先赋值给变量再引用
+- **Double quotes throughout** (including dict keys and f-strings); single quotes may wrap content only when the content itself contains double quotes
+- **Prefer f-strings**; use `str.format()` when the same template is reused in multiple places; **`%` formatting is forbidden**
+- Do not put complex expressions inside f-strings; assign to a variable first, then reference it
 
-## 区块注释
+## Region Comments
 
-代码超过 8-10 行时使用成对 region 注释，横线统一 28 个 `-`：
+When code exceeds 8-10 lines, use paired region comments, with the dashes fixed at 28 `-`:
 
 ```python
-# region ---------------------------- 这一块代码的作用 ----------------------------
+# region ---------------------------- What this block does ----------------------------
 ...
-# endregion ---------------------------- 这一块代码的作用 ----------------------------
+# endregion ---------------------------- What this block does ----------------------------
 ```
 
-## 重要/警示注释
+## Important/Warning Comments
 
-对需谨慎修改、影响重大或不得已而为之的代码，用成对 `===` 分隔线包裹，单行文本不宜过长、注意换行：
+For code that must be modified with caution, has major impact, or is a necessary evil, wrap it with paired `===` separator lines. Keep single lines from getting too long; wrap text as needed:
 
 ```python
 # ==========================================================================================================
-# 描述如下步骤的做法，一行文本太多时注意换行
+# Describe how the following steps work; wrap the text when one line gets too long
 # ==========================================================================================================
 func_name(arg=3)
 # ==========================================================================================================
 ```
 
-## 注释标点
+## Comment Punctuation
 
-注释中统一使用**英文半角标点**（`()` `,` `:` `;` `.` `!` `?`），禁止中文全角标点；标点后必须加空格，英文括号内外侧与文字之间加空格。
+Comments must use **English half-width punctuation** throughout (`()` `,` `:` `;` `.` `!` `?`); Chinese full-width punctuation is forbidden. A space must follow punctuation, and spaces go between English parentheses and surrounding text.
 
-- ✅ `# 处理数据 (支持多种格式) 并返回结果`
-- ❌ `# 处理数据（支持多种格式）并返回结果`
+- ✅ `# 处理数据 (支持多种格式) 并返回结果` (half-width parentheses with spaces)
+- ❌ `# 处理数据（支持多种格式）并返回结果` (full-width parentheses)
 
-## 行内注释
+## Inline Comments
 
-- 格式：`代码 # 注释文本`（`#` 前后各一个空格）；**禁止**用大量空格把多行行内注释对齐
-- 不再使用的代码直接删除，不以注释形式保留
+- Format: `code # comment text` (one space before and after `#`); using lots of spaces to align multiple inline comments is **forbidden**
+- Delete code that is no longer used; do not keep it around as comments
 
-**必须注释**的四类场景（说明"为什么"而非"是什么"）：
+Four scenarios that **must be commented** (explain "why", not "what"):
 
-- 非显而易见的字面量（魔法数字、特殊字符串、正则）：✅ `timeout = 30 # 第三方API文档建议超时不超过30秒` ❌ `# 设置超时为30秒`
-- 有副作用/依赖外部状态的操作（文件 I/O、网络、数据库、全局变量修改）
-- 算法核心步骤 / 非直觉写法：✅ `idx = max(0, min(idx, len(arr) - 1)) # 钳制索引在合法范围，防止越界`
-- 易歧义的类型转换或运算（隐式转换、位运算、精度敏感浮点）
+- Non-obvious literals (magic numbers, special strings, regexes): ✅ `timeout = 30 # Third-party API docs recommend a timeout of no more than 30 seconds` ❌ `# Set timeout to 30 seconds`
+- Operations with side effects/external state dependencies (file I/O, network, database, global variable modification)
+- Core algorithm steps / non-intuitive constructs: ✅ `idx = max(0, min(idx, len(arr) - 1)) # Clamp the index to the valid range to prevent out-of-bounds`
+- Ambiguous type conversions or operations (implicit conversion, bitwise operations, precision-sensitive floats)
 
-**不应注释**：自解释命名（❌ `user_name = "Alice" # 设置用户名`）、纯组装/透传调用、标准 getter/setter/property。
+**Should NOT be commented**: self-explanatory naming (❌ `user_name = "Alice" # Set the user name`), pure assembly/pass-through calls, standard getters/setters/properties.
 
-**密度**：每 3-8 行代码至少一条，不要每行都加；判断标准是不熟悉该模块的人能否 3 秒内把握每块意图；注释分散在关键节点而非堆在一处。
+**Density**: at least one comment per 3-8 lines of code, but not on every line; the test is whether someone unfamiliar with the module can grasp the intent of each block within 3 seconds; spread comments across key points rather than piling them in one place.
 
-## `__all__` 与入口规范
+## `__all__` and Entry-Point Conventions
 
-- 被 `from xxx import *` 使用的模块必须定义 `__all__`（字母序，仅列公共符号）；无此场景可省略
-- 可直接执行的文件末尾必须有 `if __name__ == "__main__":`，块内只调用 `main()`，入口逻辑封装在 `main()` 中
-- 命令行参数用 `argparse` 在 `main()` 内解析，不暴露裸 `sys.argv`
+- Modules used via `from xxx import *` must define `__all__` (alphabetical order, public symbols only); it may be omitted when no such usage exists
+- Directly executable files must end with `if __name__ == "__main__":`, whose block only calls `main()`; entry logic is encapsulated in `main()`
+- Command-line arguments are parsed with `argparse` inside `main()`; do not expose bare `sys.argv`
 
-## 文件编码
+## File Encoding
 
-- 保留 `# -*- coding: utf-8 -*-` 声明（向后兼容与编辑器识别）
-- 读写外部文件**显式指定 `encoding="utf-8"`**，不依赖系统默认编码
-- 处理 Excel 导出的 CSV 用 `utf-8-sig` 去除 BOM；兼容 GBK 等遗留编码时须加注释说明原因
+- Keep the `# -*- coding: utf-8 -*-` declaration (backward compatibility and editor recognition)
+- When reading/writing external files, **explicitly specify `encoding="utf-8"`**; do not rely on the system default encoding
+- Use `utf-8-sig` for CSVs exported from Excel to strip the BOM; when compatibility with legacy encodings such as GBK is needed, add a comment explaining why
 
-## 函数长度与复杂度
+## Function Length and Complexity
 
-- 单函数建议 ≤50 行（不含 docstring/空行），超出考虑拆分为职责单一的子函数
-- 圈复杂度建议 ≤10；`if/for/while` 嵌套超过 3 层应重构
-- 非硬性规则：拆分会破坏逻辑内聚性时可超出，但需区域注释解释原因
+- A single function should be ≤50 lines (excluding docstring/blank lines); beyond that, consider splitting into single-responsibility sub-functions
+- Cyclomatic complexity should be ≤10; refactor when `if/for/while` nesting exceeds 3 levels
+- Not a hard rule: it may be exceeded when splitting would break logical cohesion, but a region comment must explain why
 
-## 奥卡姆剃刀原则
+## Occam's Razor Principle
 
-优先选择最朴素、最直觉的方案，除非有明确的性能数据或正确性证据。复杂度应"被证明需要"后才引入，而非"万一将来需要"提前铺设。判断"更简单"的维度：代码行数更少、抽象更少、依赖更少、执行路径更短。
+Prefer the plainest, most intuitive solution unless there is clear performance data or correctness evidence. Complexity should be introduced only after it is "proven necessary", not laid down in advance "in case it's needed someday". Dimensions for judging "simpler": fewer lines of code, less abstraction, fewer dependencies, shorter execution paths.
 
-- **数据结构**：内置类型能解决就不引入第三方库（❌ 为取 CSV 一列最大值引入 pandas；✅ 标准库 `csv` + 生成器表达式）
-- **实现路径**：选逻辑最直白、一眼能看懂的（❌ `reduce(add, filter(lambda x: x > 0, nums), 0)`；✅ `sum(x for x in nums if x > 0)`）
-- **抽象层级**：只有一个实现/一个调用者的接口、基类、策略模式都是不必要的噪音，等第二个使用场景真实出现再引入
-- **函数拆分**：子函数只被一处调用且逻辑 ≤3 行时不要拆；拆分前问两个问题——有独立的名称含义吗？会被复用吗？都是"否"就留在原地
+- **Data structures**: if built-in types solve it, don't pull in third-party libraries (❌ importing pandas to get the max of one CSV column; ✅ stdlib `csv` + a generator expression)
+- **Implementation path**: choose the most straightforward logic that can be understood at a glance (❌ `reduce(add, filter(lambda x: x > 0, nums), 0)`; ✅ `sum(x for x in nums if x > 0)`)
+- **Abstraction level**: interfaces, base classes, and strategy patterns with only one implementation/one caller are unnecessary noise; introduce them when a second real use case appears
+- **Function splitting**: don't split a sub-function that is called from only one place and is ≤3 lines of logic; before splitting ask two questions—does it have an independent, meaningful name? will it be reused? If both answers are "no", leave it where it is
 
-## 代码质量检查
+## Code Quality Checks
 
-- 工具组合：**Ruff**（linter + formatter，替代 flake8/isort/black）+ **Mypy/Pyright**（类型检查）；提交前确保无新增错误
-- 推荐 `pyproject.toml` 配置：ruff `line-length = 120`、`select = ["E", "F", "I", "N", "W", "UP"]`、`quote-style = "double"`；mypy `strict = true`
+- Tooling combo: **Ruff** (linter + formatter, replaces flake8/isort/black) + **Mypy/Pyright** (type checking); ensure no new errors before committing
+- Recommended `pyproject.toml` configuration: ruff `line-length = 120`, `select = ["E", "F", "I", "N", "W", "UP"]`, `quote-style = "double"`; mypy `strict = true`
 
-## 执行要求与综合示例
+## Execution Requirements and Comprehensive Example
 
-生成任何代码必须**完整应用**上述格式；注释通俗易懂、数量充分；避免无意义空行但保留分组空行；复杂代码用区域注释降低理解成本。综合效果示意（模块命名为 `CSVUtils.py`）：
+Any generated code must **fully apply** all of the formats above; comments should be easy to understand and sufficient in number; avoid meaningless blank lines but keep grouping blank lines; use region comments to lower the cost of understanding complex code. Illustration of the combined effect (module named `CSVUtils.py`):
 
 ```python
 # -*- coding: utf-8 -*-
@@ -223,7 +223,7 @@ func_name(arg=3)
 # @Author  : AI Assistant
 # @File    : CSVUtils.py
 # @Software: VSCode
-# @Description: 提供CSV文件读取功能的工具模块，返回字典列表
+# @Description: Utility module providing CSV file reading, returning a list of dicts
 
 # ------------ common ------------
 import os
@@ -235,38 +235,38 @@ from typing import (
 
 
 def read_csv(file_path: str, delimiter: str = ",") -> List[Dict[str, str]]:
-    """读取CSV文件并返回包含字典的列表，每行数据转换为一个字典
+    """Read a CSV file and return a list of dicts, converting each row into a dict
 
     Args:
-        file_path (str): CSV文件的完整路径
-        delimiter (str): 文件使用的分隔符，默认为逗号
+        file_path (str): Full path to the CSV file
+        delimiter (str): Delimiter used by the file, comma by default
 
     Returns:
-        List[Dict[str, str]]: 每行数据组成的字典列表，键为列名
+        List[Dict[str, str]]: List of dicts, one per row, keyed by column names
 
     Raises:
-        FileNotFoundError: 当指定路径的文件不存在时抛出
-        RuntimeError: 当 CSV 解析失败时抛出
+        FileNotFoundError: Raised when no file exists at the given path
+        RuntimeError: Raised when CSV parsing fails
 
     Example:
         >>> read_csv("example.csv")
         [{'姓名': '张三', '年龄': '25'}]
     """
-    # region ---------------------------- 参数校验与路径处理 ----------------------------
-    file_path = os.path.normpath(file_path) # 消除路径中的 '.' 和 '..'，避免 isfile 误判
-    if not os.path.isfile(file_path): # isfile 而非 exists，排除目录被误传入
-        raise FileNotFoundError(f"找不到指定的CSV文件: {file_path}")
-    # endregion ---------------------------- 参数校验与路径处理 ----------------------------
+    # region ---------------------------- Parameter validation and path handling ----------------------------
+    file_path = os.path.normpath(file_path) # Remove '.' and '..' from the path to avoid isfile misjudging
+    if not os.path.isfile(file_path): # isfile rather than exists, to rule out a directory being passed in
+        raise FileNotFoundError(f"CSV file not found: {file_path}")
+    # endregion ---------------------------- Parameter validation and path handling ----------------------------
 
-    # region ---------------------------- 打开文件并读取内容 ----------------------------
-    rows_data = [] # 存储最终结果的列表
+    # region ---------------------------- Open the file and read its contents ----------------------------
+    rows_data = [] # List holding the final result
     try:
-        # utf-8-sig 自动跳过 BOM 头，避免列名出现 \ufeff 前缀
+        # utf-8-sig automatically skips the BOM, preventing a \ufeff prefix in column names
         with open(file_path, mode="r", encoding="utf-8-sig") as f:
             for row in csv.DictReader(f, delimiter=delimiter):
-                rows_data.append(dict(row)) # 转普通 dict 拷贝，避免外部修改 reader 缓存
+                rows_data.append(dict(row)) # Copy into a plain dict to avoid external mutation of the reader cache
     except csv.Error as e:
-        raise RuntimeError(f"CSV解析失败: {e}") from e
-    # endregion ---------------------------- 打开文件并读取内容 ----------------------------
+        raise RuntimeError(f"CSV parsing failed: {e}") from e
+    # endregion ---------------------------- Open the file and read its contents ----------------------------
     return rows_data
 ```
