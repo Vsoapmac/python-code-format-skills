@@ -93,7 +93,7 @@ from utils import unicode_normalizer
 
 ## Function Docstrings
 
-Every function must have a docstring, in this order: one-line summary → detailed description (optional) → `Args:` → `Returns:` → `Raises:` → `Example:`
+Every function must have a docstring, in this order: one-line summary → supplementary description (optional) → `Args:` → `Returns:` → `Raises:` → `Example:`
 
 ```python
 def func_name(arg: str) -> int:
@@ -116,7 +116,68 @@ def func_name(arg: str) -> int:
 
 - `Raises:` is mandatory when the function explicitly `raise`s; exceptions thrown only by built-in functions/libraries by default may be omitted
 - `Example:` must provide runnable code and its expected output
-- Exceptions: `@property` skips `Args:`/`Raises:`; `__init__` skips `Returns:`; for `main()`, `Returns:`/`Raises:`/`Example:` are optional
+- Exceptions: `@property` skips `Args:`/`Raises:`; `__init__` skips `Returns:`; for `main()`, `Returns:`/`Raises:`/`Example:` are optional; a simple function whose logic is ≤3 lines gets a summary only (see the next section)
+
+### Requirements for Function Docstrings
+
+The whole docstring has just one requirement: **write plain language**. Keep it simple and intuitive - no jargon, no implementation details, no pain points, no irrelevant information.
+
+- **Summary**: one sentence, saying only **what this function does**, without referring to other files. Example: `"""Read a CSV file and return a list of dicts"""`
+- **Supplementary description (optional)**: no more than two lines, adding only extra information the summary left out. If the summary already says it clearly, **skip it**
+- **`Args:` / `Returns:` / `Raises:` / `Example:`**: plain language too - one sentence for one parameter, one return value, one exception
+
+Exception: when the function logic is within 3 lines (a simple lookup or pass-through, for example), write the summary only; `Args:` / `Returns:` / `Example:` are not required.
+
+The error demonstration below is hard to follow:
+
+```python
+def attach(self, name: Any, data: Any) -> None:
+    """记一个附件: 文本 / JSON / 二进制 / 文件
+
+    不流式: 由插件在用例结束时统一追加, 位置与调用顺序无关.
+
+    `dict` / `list` 渲染成 JSON, 序列化不了就降级成 `str(data)` 的文本块加
+    一条告警; `str` 永远是文本块, `pathlib.Path` 才是文件; 契约之外的类型
+    按文本处理. 一律不抛.
+
+    Args:
+        name (Any): 附件名 (折叠块的标题); 先过 `_safe_text`
+        data (Any): `dict` / `list` / `str` / `bytes` / `pathlib.Path`;
+            契约之外的类型按文本处理并发一条告警
+
+    Raises:
+        FileNotFoundError: `data` 是 `Path` 但它指向的文件不存在或是个目录;
+            消息里给出解析后的路径与提示
+
+    Example:
+        >>> from pytest_live_report import _state, report
+        >>> from pytest_live_report._content import CaseContent
+        >>> _state.push_case(CaseContent(case_id="rp-c1", nodeid="tests/test_a.py::test_x"))
+        >>> report.attach("response", {"b": 1, "a": [1, 2]})
+        >>> _state.current_case().attachments()[0].summary
+        'JSON · 2 键'
+    """
+```
+
+A docstring like that leaves the reader lost. The correct way:
+
+```python
+def attach(self, name: Any, data: Any) -> None:
+    """Attach the attachment to the report; it can be text / JSON / binary / file
+
+    Args:
+        name (Any): Attachment name
+        data (Any): The JSON data to summarize
+
+    Raises:
+        FileNotFoundError: The file does not exist.
+
+    Example:
+        >>> report.attach("response", {"b": 1})
+        >>> report.current_case().attachments()[0].summary
+        'Text · 2 B'
+    """
+```
 
 ## Class Definitions
 

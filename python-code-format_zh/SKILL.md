@@ -93,7 +93,7 @@ from utils import unicode_normalizer
 
 ## 函数 docstring
 
-每个函数必须有 docstring，按顺序：一行摘要 → 详细描述(可选) → `Args:` → `Returns:` → `Raises:` → `Example:`
+每个函数必须有 docstring，按顺序：一行摘要 → 补充描述(可选但不能超过2行) → `Args:` → `Returns:` → `Raises:` → `Example:`
 
 ```python
 def func_name(arg: str) -> int:
@@ -116,7 +116,68 @@ def func_name(arg: str) -> int:
 
 - `Raises:` 在函数内显式 `raise` 时必须写；仅内置函数/库默认抛出的异常可省略
 - `Example:` 必须给出可运行代码和预期输出
-- 例外：`@property` 跳过 `Args:`/`Raises:`；`__init__` 跳过 `Returns:`；`main()` 的 `Returns:`/`Raises:`/`Example:` 可选
+- 例外：`@property` 跳过 `Args:`/`Raises:`；`__init__` 跳过 `Returns:`；`main()` 的 `Returns:`/`Raises:`/`Example:` 可选；函数逻辑 ≤3 行的简单函数只写摘要（见下节）
+
+### 函数 docstring的要求
+
+整个 docstring 只有一个要求: **说人话**。简单, 直观, 不写听不懂的技术话, 不写实现过程和痛点, 不写无关信息。
+
+- **摘要**: 一句话, 只说明**这个函数能做什么**, 不涉及其他文件。示例: `"""读取CSV文件并返回字典列表"""`
+- **补充描述(可选)**: 最多两行, 只补充摘要没提到的额外信息。摘要已经说清楚了就**不要写**
+- **`Args:` / `Returns:` / `Raises:` / `Example:`**: 同样说人话, 一句话说清一个参数、一个返回值、一个异常
+
+例外: 函数逻辑在 3 行以内(如简单的取值、透传)时, 只写摘要即可, 不必凑齐 `Args:` / `Returns:` / `Example:`。
+
+首先是错误示范:
+
+```python
+def attach(self, name: Any, data: Any) -> None:
+    """记一个附件: 文本 / JSON / 二进制 / 文件
+
+    不流式: 由插件在用例结束时统一追加, 位置与调用顺序无关.
+
+    `dict` / `list` 渲染成 JSON, 序列化不了就降级成 `str(data)` 的文本块加
+    一条告警; `str` 永远是文本块, `pathlib.Path` 才是文件; 契约之外的类型
+    按文本处理. 一律不抛.
+
+    Args:
+        name (Any): 附件名 (折叠块的标题); 先过 `_safe_text`
+        data (Any): `dict` / `list` / `str` / `bytes` / `pathlib.Path`;
+            契约之外的类型按文本处理并发一条告警
+
+    Raises:
+        FileNotFoundError: `data` 是 `Path` 但它指向的文件不存在或是个目录;
+            消息里给出解析后的路径与提示
+
+    Example:
+        >>> from pytest_live_report import _state, report
+        >>> from pytest_live_report._content import CaseContent
+        >>> _state.push_case(CaseContent(case_id="rp-c1", nodeid="tests/test_a.py::test_x"))
+        >>> report.attach("response", {"b": 1, "a": [1, 2]})
+        >>> _state.current_case().attachments()[0].summary
+        'JSON · 2 键'
+    """
+```
+
+这样的注释会让人看着云里雾里, 正确的做法是:
+
+```python
+def attach(self, name: Any, data: Any) -> None:
+    """将附件attach在报告里面。附件可以是文本 / JSON / 二进制 / 文件
+
+    Args:
+        name (Any): 附件名
+        data (Any): 总结的json数据
+
+    Raises:
+        FileNotFoundError: 文件不存在。
+
+    Example:
+        >>> report.attach("response", {"b": 1})
+        >>> report.current_case().attachments()[0].name
+        'response'
+    """
+```
 
 ## 类定义
 
