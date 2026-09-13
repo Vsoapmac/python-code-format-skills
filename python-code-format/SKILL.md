@@ -7,6 +7,21 @@ description: Use when you are generating more than 15 lines of code, writing Pyt
 
 When generating any Python code, the following format must be strictly followed. Core principle: **anyone who sees the code should immediately understand what it does without having to think**. The biggest cost of code is not writing it, but reading, understanding, and modifying it repeatedly afterwards; the essence of a comment is to save the reader the time of "inferring the code's intent", not to restate the syntax. If a plain solution works, do not introduce unnecessary complexity.
 
+## General Rule for Comments: Write Plain Language
+
+This applies to **all comment text**: the module header `@Description`, function docstrings, class and variable notes, inline comments, block comments, region comments, important/warning comments, and enum member comments.
+
+Comments are written for whoever reads the code later, so there is only one requirement: **write plain language** - simple and intuitive. One glance should be enough; the reader should not have to go back and think it over again.
+
+- **No jargon**: do not pile up terminology or abbreviations only the author understands
+- **No implementation details or pain points**: do not explain 'how I worked around this' or 'what tripped me up here'
+- **No irrelevant information**: anything unrelated to what this piece of code does right now stays out
+
+✅ `file_path = os.path.normpath(file_path) # Normalize the path first, so one file is not treated as two`
+❌ `file_path = os.path.normpath(file_path) # Remove '.' and '..' from the path to avoid isfile misjudging`
+
+Both say the same thing. The first states the purpose in one line; the second has to be read to the end before it makes sense - the difference is whether it is plain language.
+
 ## Module File Header
 
 The beginning of the file must have the following header. Replace the `{}` placeholders according to context (e.g., `{date}` → current date):
@@ -120,7 +135,7 @@ def func_name(arg: str) -> int:
 
 ### Requirements for Function Docstrings
 
-The whole docstring has just one requirement: **write plain language**. Keep it simple and intuitive - no jargon, no implementation details, no pain points, no irrelevant information.
+The text must be written in **plain language** (see 'General Rule for Comments' at the top): simple and intuitive - no jargon, no implementation details, no pain points, no irrelevant information. Docstrings are no exception.
 
 - **Summary**: one sentence, saying only **what this function does**, without referring to other files. Example: `"""Read a CSV file and return a list of dicts"""`
 - **Supplementary description (optional)**: no more than two lines, adding only extra information the summary left out. If the summary already says it clearly, **skip it**
@@ -181,7 +196,7 @@ def attach(self, name: Any, data: Any) -> None:
 
 ## Class Definitions
 
-- Class variables and instance variables need comments explaining their purpose
+- Class variables and instance variables need comments explaining their purpose, in **plain language** too
 - Class methods need complete docstrings just like regular functions
 
 ## Error Handling
@@ -199,21 +214,21 @@ def attach(self, name: Any, data: Any) -> None:
 
 ## Region Comments
 
-When code exceeds 8-10 lines, use paired region comments, with the dashes fixed at 28 `-`:
+When code exceeds 8-10 lines, use paired region comments, with the dashes fixed at 28 `-`. The text inside a region must be **plain language** too, so one glance shows what the block does:
 
 ```python
-# region ---------------------------- What this block does ----------------------------
+# region ---------------------------- Read and parse the CSV file ----------------------------
 ...
-# endregion ---------------------------- What this block does ----------------------------
+# endregion ---------------------------- Read and parse the CSV file ----------------------------
 ```
 
 ## Important/Warning Comments
 
-For code that must be modified with caution, has major impact, or is a necessary evil, wrap it with paired `===` separator lines. Keep single lines from getting too long; wrap text as needed:
+For code that must be modified with caution, has major impact, or is a necessary evil, wrap it with paired `===` separator lines. Keep single lines from getting too long; wrap text as needed. Use **plain language** here as well instead of piling up jargon:
 
 ```python
 # ==========================================================================================================
-# Describe how the following steps work; wrap the text when one line gets too long
+# The order here cannot be changed: validate first, then write
 # ==========================================================================================================
 func_name(arg=3)
 # ==========================================================================================================
@@ -221,7 +236,7 @@ func_name(arg=3)
 
 ## Comment Punctuation
 
-Comments must use **English half-width punctuation** throughout (`()` `,` `:` `;` `.` `!` `?`); Chinese full-width punctuation is forbidden. A space must follow punctuation, and spaces go between English parentheses and surrounding text.
+Comments must use **English half-width punctuation** throughout (`()` `,` `:` `;` `.` `!` `?`); Chinese full-width punctuation is forbidden. A space must follow punctuation, and spaces go between English parentheses and surrounding text. Punctuation only decides how to write; what to write still follows 'General Rule for Comments' at the top.
 
 - ✅ `# 处理数据 (支持多种格式) 并返回结果` (half-width parentheses with spaces)
 - ❌ `# 处理数据（支持多种格式）并返回结果` (full-width parentheses)
@@ -230,6 +245,7 @@ Comments must use **English half-width punctuation** throughout (`()` `,` `:` `;
 
 - Format: `code # comment text` (one space before and after `#`); using lots of spaces to align multiple inline comments is **forbidden**
 - Delete code that is no longer used; do not keep it around as comments
+- Inline comments also need **plain language** (see 'General Rule for Comments' at the top); the four scenarios below only answer 'should this be commented', they are not a licence to write jargon
 
 Four scenarios that **must be commented** (explain "why", not "what"):
 
@@ -240,7 +256,7 @@ Four scenarios that **must be commented** (explain "why", not "what"):
 
 **Should NOT be commented**: self-explanatory naming (❌ `user_name = "Alice" # Set the user name`), pure assembly/pass-through calls, standard getters/setters/properties.
 
-**Density**: at least one comment per 3-8 lines of code, but not on every line; the test is whether someone unfamiliar with the module can grasp the intent of each block within 3 seconds; spread comments across key points rather than piling them in one place.
+**Density**: at least one comment per 3-8 lines of code, but not on every line; the test is whether someone unfamiliar with the module can tell at a glance what each block is doing; spread comments across key points rather than piling them in one place.
 
 ## `__all__` and Entry-Point Conventions
 
@@ -276,7 +292,7 @@ Prefer the plainest, most intuitive solution unless there is clear performance d
 
 ## Execution Requirements and Comprehensive Example
 
-Any generated code must **fully apply** all of the formats above; comments should be easy to understand and sufficient in number; avoid meaningless blank lines but keep grouping blank lines; use region comments to lower the cost of understanding complex code. Illustration of the combined effect (module named `CSVUtils.py`):
+Any generated code must **fully apply** all of the formats above; comments must be in **plain language** and sufficient in number; avoid meaningless blank lines but keep grouping blank lines; use region comments to lower the cost of understanding complex code. Illustration of the combined effect (module named `CSVUtils.py`):
 
 ```python
 # -*- coding: utf-8 -*-
@@ -284,7 +300,7 @@ Any generated code must **fully apply** all of the formats above; comments shoul
 # @Author  : AI Assistant
 # @File    : CSVUtils.py
 # @Software: VSCode
-# @Description: Utility module providing CSV file reading, returning a list of dicts
+# @Description: Utility module that reads a CSV file into a list of dicts
 
 # ------------ common ------------
 import os
@@ -314,18 +330,18 @@ def read_csv(file_path: str, delimiter: str = ",") -> List[Dict[str, str]]:
         [{'姓名': '张三', '年龄': '25'}]
     """
     # region ---------------------------- Parameter validation and path handling ----------------------------
-    file_path = os.path.normpath(file_path) # Remove '.' and '..' from the path to avoid isfile misjudging
-    if not os.path.isfile(file_path): # isfile rather than exists, to rule out a directory being passed in
+    file_path = os.path.normpath(file_path) # Normalize the path first, so one file is not treated as two
+    if not os.path.isfile(file_path): # Use isfile rather than exists, so a directory is not accepted by mistake
         raise FileNotFoundError(f"CSV file not found: {file_path}")
     # endregion ---------------------------- Parameter validation and path handling ----------------------------
 
     # region ---------------------------- Open the file and read its contents ----------------------------
     rows_data = [] # List holding the final result
     try:
-        # utf-8-sig automatically skips the BOM, preventing a \ufeff prefix in column names
+        # utf-8-sig skips the leading BOM, so column names do not get a \ufeff prefix
         with open(file_path, mode="r", encoding="utf-8-sig") as f:
             for row in csv.DictReader(f, delimiter=delimiter):
-                rows_data.append(dict(row)) # Copy into a plain dict to avoid external mutation of the reader cache
+                rows_data.append(dict(row)) # Copy into a plain dict, so the reader contents cannot be changed
     except csv.Error as e:
         raise RuntimeError(f"CSV parsing failed: {e}") from e
     # endregion ---------------------------- Open the file and read its contents ----------------------------
