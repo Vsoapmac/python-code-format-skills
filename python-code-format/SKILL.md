@@ -58,8 +58,9 @@ Then replace the `{author name}` placeholder according to the user's choice.
 - **Constants**: UPPER_SNAKE_CASE, defined together after imports and before functions/classes; never scatter magic numbers inside functions—any literal used more than once must be extracted into a constant; when there are more than 10 constants, extract them into a standalone `constants.py`/`config.py`
 
 ```python
-# ------------ Constants ------------
+# region ---------------------------- Constants ----------------------------
 DEFAULT_TIMEOUT_SECONDS = 30 # Third-party API docs recommend a timeout of no more than 30 seconds
+# endregion ---------------------------- Constants ----------------------------
 ```
 
 ## Enums
@@ -214,12 +215,29 @@ def attach(self, name: Any, data: Any) -> None:
 
 ## Region Comments
 
-When code exceeds 8-10 lines, use paired region comments, with the dashes fixed at 28 `-`. The text inside a region must be **plain language** too, so one glance shows what the block does:
+**Every block comment is a paired region/endregion; the old "only when code exceeds 8-10 lines" rule is gone**:
+
+- **Every function/method needs one region/endregion pair**, however short; it may wrap the whole function or just the body, and long functions may split the body into several pairs
+- Other sections split by comments (constants, class definitions, module-level code) also must use paired region/endregion
+- **The only exception is the import section**: keep the `# ------------ group name ------------` headers, no region
+
+The dashes are fixed at 28 `-`; the title text must be **plain language** too, so one glance shows what the block does:
 
 ```python
 # region ---------------------------- Read and parse the CSV file ----------------------------
 ...
 # endregion ---------------------------- Read and parse the CSV file ----------------------------
+```
+
+A short function may wrap the whole function or only its body:
+
+```python
+# region ---------------------------- Read the config ----------------------------
+def load_config(path: str) -> Dict[str, Any]:
+    """Read the config file and return it as a dict"""
+    with open(path, mode="r", encoding="utf-8") as f:
+        return json.load(f)
+# endregion ---------------------------- Read the config ----------------------------
 ```
 
 ## Important/Warning Comments
@@ -292,7 +310,7 @@ Prefer the plainest, most intuitive solution unless there is clear performance d
 
 ## Execution Requirements and Comprehensive Example
 
-Any generated code must **fully apply** all of the formats above; comments must be in **plain language** and sufficient in number; avoid meaningless blank lines but keep grouping blank lines; use region comments to lower the cost of understanding complex code. Illustration of the combined effect (module named `CSVUtils.py`):
+Any generated code must **fully apply** all of the formats above; comments must be in **plain language** and sufficient in number; avoid meaningless blank lines but keep grouping blank lines; every function/method must carry region comments (import groups excepted). Illustration of the combined effect (module named `CSVUtils.py`):
 
 ```python
 # -*- coding: utf-8 -*-
